@@ -1,0 +1,64 @@
+{% extends "app/base.html" %}
+
+{% block header_title %}{{ view_name }}{% endblock %}
+
+{% block content %}
+<div class="alert {% if 'Inefficient' in view_name %}alert-warning{% else %}alert-success{% endif %}">
+    <h2>{{ view_name }}</h2>
+    <p>{{ description }}</p>
+    <p><strong>Check the django-debug-toolbar on the right side to see the query count!</strong></p>
+</div>
+
+{% for book in books %}
+<div style="background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+    <h3>{{ book.title }}</h3>
+    <p><strong>Author:</strong> {{ book.author.name }} | <strong>Publisher:</strong> {% if book.publisher %}{{ book.publisher.name }}{% else %}N/A{% endif %}</p>
+    
+    <h4 style="margin-top: 15px; margin-bottom: 10px;">Reviews ({{ book.reviews.count }}):</h4>
+    {% if book.reviews.all %}
+        <table style="margin-top: 10px;">
+            <thead>
+                <tr>
+                    <th>Reviewer</th>
+                    <th>Rating</th>
+                    <th>Comment</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for review in book.reviews.all %}
+                <tr>
+                    <td>{{ review.reviewer.username }}</td>
+                    <td>
+                        <span class="badge {% if review.rating >= 4 %}badge-success{% elif review.rating >= 3 %}badge-warning{% else %}badge-primary{% endif %}">
+                            {{ review.rating }}/5
+                        </span>
+                    </td>
+                    <td>{{ review.comment|truncatewords:20 }}</td>
+                    <td>{{ review.created_at|date:"Y-m-d" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p style="color: #666; font-style: italic;">No reviews yet.</p>
+    {% endif %}
+</div>
+{% empty %}
+<div style="background: white; padding: 30px; text-align: center; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+    <p>No books found. Please run the management command to populate test data:</p>
+    <code>python manage.py populate_data</code>
+</div>
+{% endfor %}
+
+<div style="margin-top: 20px; padding: 15px; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+    <h3>What to look for in django-debug-toolbar:</h3>
+    <ul style="margin-left: 20px; margin-top: 10px;">
+        <li>Total number of SQL queries executed</li>
+        <li>Duplicate queries (indicated in red)</li>
+        <li>Time taken for each query</li>
+        <li>Query details by clicking on the SQL panel</li>
+    </ul>
+</div>
+{% endblock %}
+

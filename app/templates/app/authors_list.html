@@ -1,0 +1,61 @@
+{% extends "app/base.html" %}
+
+{% block header_title %}{{ view_name }}{% endblock %}
+
+{% block content %}
+<div class="alert {% if 'Inefficient' in view_name %}alert-warning{% else %}alert-success{% endif %}">
+    <h2>{{ view_name }}</h2>
+    <p>{{ description }}</p>
+    <p><strong>Check the django-debug-toolbar on the right side to see the query count!</strong></p>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>User</th>
+            <th>Number of Books</th>
+            <th>Books</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for author in authors %}
+        <tr>
+            <td><strong>{{ author.name }}</strong></td>
+            <td>{{ author.email }}</td>
+            <td>{% if author.user %}{{ author.user.username }}{% else %}N/A{% endif %}</td>
+            <td>{% if author.book_count %}{{ author.book_count }}{% else %}{{ author.books.count }}{% endif %}</td>
+            <td>
+                {% for book in author.books.all|slice:":3" %}
+                    <span class="badge badge-primary">{{ book.title }}</span>
+                {% endfor %}
+                {% with book_count=author.book_count|default:author.books.count %}
+                    {% if book_count > 3 %}
+                        <span class="badge badge-warning">+{{ book_count|add:"-3" }} more</span>
+                    {% endif %}
+                {% endwith %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5" style="text-align: center; padding: 30px;">
+                <p>No authors found. Please run the management command to populate test data:</p>
+                <code>python manage.py populate_data</code>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div style="margin-top: 20px; padding: 15px; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+    <h3>What to look for in django-debug-toolbar:</h3>
+    <ul style="margin-left: 20px; margin-top: 10px;">
+        <li>Total number of SQL queries executed</li>
+        <li>Duplicate queries (indicated in red)</li>
+        <li>Time taken for each query</li>
+        <li>Query details by clicking on the SQL panel</li>
+    </ul>
+</div>
+{% endblock %}
+

@@ -1,0 +1,58 @@
+{% extends "app/base.html" %}
+
+{% block header_title %}{{ view_name }}{% endblock %}
+
+{% block content %}
+<div class="alert alert-success">
+    <h2>{{ view_name }}</h2>
+    <p>{{ description }}</p>
+    <p><strong>Check the django-debug-toolbar on the right side to see the query count!</strong></p>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Number of Books</th>
+            <th>Average Rating</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for author in authors %}
+        <tr>
+            <td><strong>{{ author.name }}</strong></td>
+            <td>{{ author.email }}</td>
+            <td>{{ author.book_count }}</td>
+            <td>
+                {% if author.avg_rating %}
+                    <span class="badge {% if author.avg_rating >= 4 %}badge-success{% elif author.avg_rating >= 3 %}badge-warning{% else %}badge-primary{% endif %}">
+                        {{ author.avg_rating|floatformat:2 }}/5.0
+                    </span>
+                {% else %}
+                    <span>N/A</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4" style="text-align: center; padding: 30px;">
+                <p>No authors found. Please run the management command to populate test data:</p>
+                <code>python manage.py populate_data</code>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div style="margin-top: 20px; padding: 15px; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+    <h3>What to look for in django-debug-toolbar:</h3>
+    <ul style="margin-left: 20px; margin-top: 10px;">
+        <li>Total number of SQL queries executed (should be just 1!)</li>
+        <li>No duplicate queries</li>
+        <li>Time taken for the query</li>
+        <li>Query details by clicking on the SQL panel - notice the GROUP BY and aggregate functions</li>
+    </ul>
+</div>
+{% endblock %}
+

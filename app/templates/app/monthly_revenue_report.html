@@ -1,0 +1,95 @@
+{% extends "app/base.html" %}
+
+{% block header_title %}{{ view_name }}{% endblock %}
+
+{% block content %}
+<div class="alert {% if 'Inefficient' in view_name %}alert-warning{% else %}alert-success{% endif %}">
+    <h2>{{ view_name }}</h2>
+    <p>{{ description }}</p>
+    <p><strong>Check the django-debug-toolbar on the right side to see the query count!</strong></p>
+</div>
+
+{% if report_data %}
+<div style="margin-bottom: 20px; padding: 15px; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+    <h3>Report Summary</h3>
+    <p><strong>Total Records:</strong> {{ report_data|length }}</p>
+    <p><strong>Unique Customers:</strong> {{ report_data|length|add:"0"|default:"N/A" }}</p>
+    <p><strong>Unique Months:</strong> 
+        {% regroup report_data by month as months %}
+        {{ months|length }}
+    </p>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Month</th>
+            <th>Customer</th>
+            <th>Total Revenue</th>
+            <th>Total Orders</th>
+            <th>Average Check</th>
+            <th>Returning Customer</th>
+            <th>Returning Ratio (%)</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% regroup report_data by month as monthly_groups %}
+        {% for month_group in monthly_groups %}
+            {% for item in month_group.list %}
+            <tr>
+                {% if forloop.first %}
+                <td rowspan="{{ month_group.list|length }}" style="vertical-align: middle; font-weight: bold; background: #f8f9fa;">
+                    {{ month_group.grouper }}
+                </td>
+                {% endif %}
+                <td><strong>{{ item.customer.username }}</strong></td>
+                <td>${{ item.total_revenue|floatformat:2 }}</td>
+                <td>{{ item.total_orders }}</td>
+                <td>${{ item.avg_check|floatformat:2 }}</td>
+                <td>
+                    {% if item.is_returning %}
+                        <span class="badge badge-success">Yes</span>
+                    {% else %}
+                        <span class="badge badge-primary">No</span>
+                    {% endif %}
+                </td>
+                {% if forloop.first %}
+                <td rowspan="{{ month_group.list|length }}" style="vertical-align: middle; font-weight: bold;">
+                    {{ item.returning_ratio|floatformat:1 }}%
+                </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        {% endfor %}
+    </tbody>
+</table>
+
+<div style="margin-top: 20px; padding: 15px; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+    <h3>Key Metrics Explained:</h3>
+    <ul style="margin-left: 20px; margin-top: 10px;">
+        <li><strong>Total Revenue:</strong> Sum of all order values (quantity × price) for the customer in that month</li>
+        <li><strong>Total Orders:</strong> Number of orders placed by the customer in that month</li>
+        <li><strong>Average Check:</strong> Average order value (Total Revenue / Total Orders)</li>
+        <li><strong>Returning Customer:</strong> Customer with more than 1 order in that month</li>
+        <li><strong>Returning Ratio:</strong> Percentage of customers who are returning customers in that month</li>
+    </ul>
+</div>
+
+<div style="margin-top: 20px; padding: 15px; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+    <h3>What to look for in django-debug-toolbar:</h3>
+    <ul style="margin-left: 20px; margin-top: 10px;">
+        <li>Total number of SQL queries executed</li>
+        <li>Duplicate queries (indicated in red)</li>
+        <li>Time taken for each query</li>
+        <li>Query details by clicking on the SQL panel - notice the GROUP BY, SUM, COUNT, AVG, and CASE expressions</li>
+    </ul>
+</div>
+{% else %}
+<div style="background: white; padding: 30px; text-align: center; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+    <p>No revenue data found. Please run the management command to populate test data:</p>
+    <code>python manage.py populate_data</code>
+    <p style="margin-top: 15px; color: #666;">Note: The populate_data command will create orders and order items.</p>
+</div>
+{% endif %}
+{% endblock %}
+

@@ -1,0 +1,80 @@
+{% extends "app/base.html" %}
+
+{% block content %}
+<div class="alert alert-info">
+    <h2>Query Optimization Comparison</h2>
+    <p>This project demonstrates the N+1 query problem in Django and how to solve it using <code>select_related</code>, <code>prefetch_related</code>, and <code>annotations</code>.</p>
+    <p><strong>Use django-debug-toolbar</strong> (visible on the right side) to see the query count difference between inefficient and optimized views.</p>
+</div>
+
+<div class="comparison-grid">
+    <div class="comparison-card">
+        <h3>📚 Books List</h3>
+        <p>Demonstrates N+1 queries when accessing related ForeignKey fields (author, publisher) and ManyToMany fields (categories).</p>
+        <ul>
+            <li><strong>Inefficient:</strong> 1 + 3N queries</li>
+            <li><strong>Optimized:</strong> 2 queries</li>
+        </ul>
+        <a href="{% url 'books_inefficient' %}">View Inefficient</a>
+        <a href="{% url 'books_optimized' %}" style="margin-left: 10px;">View Optimized</a>
+    </div>
+    
+    <div class="comparison-card">
+        <h3>👤 Authors List</h3>
+        <p>Demonstrates N+1 queries when accessing reverse ForeignKey relationships (books) and related User objects.</p>
+        <ul>
+            <li><strong>Inefficient:</strong> 1 + 2N queries</li>
+            <li><strong>Optimized:</strong> 2 queries</li>
+        </ul>
+        <a href="{% url 'authors_inefficient' %}">View Inefficient</a>
+        <a href="{% url 'authors_optimized' %}" style="margin-left: 10px;">View Optimized</a>
+    </div>
+    
+    <div class="comparison-card">
+        <h3>📖 Books with Reviews</h3>
+        <p>Demonstrates N+1 queries when accessing nested relationships (books → reviews → reviewer).</p>
+        <ul>
+            <li><strong>Inefficient:</strong> 1 + 3N queries</li>
+            <li><strong>Optimized:</strong> 2 queries</li>
+        </ul>
+        <a href="{% url 'books_reviews_inefficient' %}">View Inefficient</a>
+        <a href="{% url 'books_reviews_optimized' %}" style="margin-left: 10px;">View Optimized</a>
+    </div>
+    
+    <div class="comparison-card">
+        <h3>📊 Authors with Statistics</h3>
+        <p>Demonstrates N+1 queries when calculating aggregations in Python instead of the database.</p>
+        <ul>
+            <li><strong>Inefficient:</strong> 1 + 2N queries</li>
+            <li><strong>Optimized:</strong> 1 query (using annotations)</li>
+        </ul>
+        <a href="{% url 'authors_stats_inefficient' %}">View Inefficient</a>
+        <a href="{% url 'authors_stats_optimized' %}" style="margin-left: 10px;">View Optimized</a>
+    </div>
+    
+    <div class="comparison-card">
+        <h3>💰 Monthly Revenue Report</h3>
+        <p>Complex SQL reporting: monthly revenue breakdown per customer with total orders, average check, and returning customer ratio.</p>
+        <ul>
+            <li><strong>Inefficient:</strong> Multiple queries + Python calculations</li>
+            <li><strong>Optimized:</strong> Uses annotate, aggregate, Case/When, and TruncMonth</li>
+        </ul>
+        <a href="{% url 'revenue_report_inefficient' %}">View Inefficient</a>
+        <a href="{% url 'revenue_report_optimized' %}" style="margin-left: 10px;">View Optimized</a>
+    </div>
+</div>
+
+<div class="alert alert-success" style="margin-top: 30px;">
+    <h3>Key Optimization Techniques:</h3>
+    <ul style="margin-left: 20px; margin-top: 10px;">
+        <li><strong>select_related():</strong> Use for ForeignKey and OneToOneField relationships (JOIN in SQL)</li>
+        <li><strong>prefetch_related():</strong> Use for ManyToManyField and reverse ForeignKey relationships (separate optimized query)</li>
+        <li><strong>annotations:</strong> Calculate aggregations in the database instead of Python</li>
+        <li><strong>Prefetch() objects:</strong> For more control over prefetch queries, including nested relationships</li>
+        <li><strong>TruncMonth() and date functions:</strong> Group by time periods efficiently in the database</li>
+        <li><strong>Case/When expressions:</strong> Conditional logic in database queries (e.g., returning customer flag)</li>
+        <li><strong>F() expressions:</strong> Reference model fields and perform calculations in database queries</li>
+    </ul>
+</div>
+{% endblock %}
+
