@@ -20,7 +20,7 @@ ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 CORS_ALLOW_ALL_ORIGINS = True
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://performance-optimization-silk.vercel.app",
+    "https://web-production-f6dc.up.railway.app",
 ]
 
 
@@ -66,7 +66,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "core.wsgi.app"
+WSGI_APPLICATION = "core.wsgi.application"
 
 
 # Database
